@@ -16,16 +16,19 @@ function buildUrl(path: string, params?: Record<string, string | undefined>): st
 }
 
 async function fetchJson<T>(url: string): Promise<T | { error: string }> {
+  console.info(`[api] request -> ${url}`);
   try {
     const response = await fetch(url, {
       headers: { Accept: 'application/json' },
     });
     const data = (await response.json()) as Record<string, unknown>;
+    console.info(`[api] response <- ${url} status=${response.status}`);
     if (!response.ok) {
       return { error: (data.error as string) || `API returned ${response.status}` };
     }
     return data as T;
   } catch (err) {
+    console.error(`[api] request failed <- ${url}:`, err);
     return { error: `Failed to reach AJaaS API: ${err instanceof Error ? err.message : String(err)}` };
   }
 }
