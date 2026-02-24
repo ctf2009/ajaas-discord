@@ -6,6 +6,7 @@ import { handleWeekly } from './handlers/weekly.js';
 import { handleRandom } from './handlers/random.js';
 import { handleMessage } from './handlers/message.js';
 import { handleTypes } from './handlers/types.js';
+import { formatCommandOptions, formatInteractionContext, logReplyRoute } from './logging.js';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -15,6 +16,10 @@ client.once(Events.ClientReady, (readyClient) => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
+
+  console.info(
+    `[discord] incoming command=/${interaction.commandName} options=[${formatCommandOptions(interaction)}] from ${formatInteractionContext(interaction)}`
+  );
 
   try {
     switch (interaction.commandName) {
@@ -38,6 +43,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   } catch (error) {
     console.error(`Error handling /${interaction.commandName}:`, error);
+    logReplyRoute(interaction, 'error', 'Unhandled command error');
     const reply = { content: 'Something went wrong. Please try again.', ephemeral: true };
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp(reply);
